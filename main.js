@@ -1,7 +1,8 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
+let win;
 
 function createWindow() {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 300,
     height: 300,
     transparent: true,
@@ -17,3 +18,9 @@ function createWindow() {
 }
 
 app.whenReady().then(createWindow);
+
+ipcMain.on("move-window", (event, x, y) => {
+    if (win){
+        win.setPosition(x, y);
+    }
+});
