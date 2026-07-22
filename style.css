@@ -21,6 +21,7 @@ html,
         flex-direction: column;
         justify-content: flex-end;
         align-items: center;
+
     }
 
     #thought-bubble {
@@ -60,14 +61,13 @@ html,
         border-color:white transparent transparent transparent;
     }
 
-    h1{
+    #rocky{
         margin:0;
         font-size:120px;
+        cursor: grab;
 
         user-select:none;
         -webkit-user-select:none;
-
-        -webkit-app-region:drag;
 
         animation: floatRocky 2.8s ease-in-out infinite;
     }

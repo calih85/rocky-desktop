@@ -11,6 +11,7 @@ function createWindow() {
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
     },
   });
 
@@ -20,7 +21,10 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 ipcMain.on("move-window", (event, x, y) => {
-    if (win){
-        win.setPosition(x, y);
+    console.log("Move:", x, y);
+    if (win) {
+        const [currentX, currentY] = win.getPosition();
+        win.setPosition(currentX + x, currentY + y);
     }
+
 });

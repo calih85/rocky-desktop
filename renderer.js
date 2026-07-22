@@ -1,9 +1,7 @@
+const { ipcRenderer } = require("electron");
+
 const rocky = document.getElementById("rocky");
 const bubble = document.getElementById("thought-bubble");
-
-rocky.addEventListener("mousedown", () => {
-    console.log("Friend... you grabbed me!");
-});
 
 const thoughts = [
     "Friend... Hello! 🪨",
@@ -24,21 +22,90 @@ const thoughts = [
     "Friend... Excellent debugging."
 ];
 
-function changeThought() {
+let thoughtInterval;
+let thoughtTimeout;
+let resumeTimeout;
+let reactionActive = false;
+let isDragging = false;
+let startMouse = null;
+let hasMoved = false;
 
+function changeThought(customText = null) {
     bubble.style.opacity = 0;
 
-    setTimeout(() => {
-
-        const random =
-            thoughts[Math.floor(Math.random() * thoughts.length)];
-
-        bubble.textContent = random;
-
+    thoughtTimeout = setTimeout(() => {
+        bubble.textContent = customText || thoughts[Math.floor(Math.random() * thoughts.length)];
         bubble.style.opacity = 1;
-
-    }, 500);
-
+    }, 300);
 }
 
-setInterval(changeThought, 5000);
+function startThoughtCycle() {
+    clearInterval(thoughtInterval);
+    thoughtInterval = setInterval(() => {
+        changeThought();
+    }, 5000);
+}
+
+function showGrabReaction() {
+
+    console.log("showGrabReaction called");
+
+    if (reactionActive) {
+        return;
+    }
+
+    reactionActive = true;
+
+    clearInterval(thoughtInterval);
+    clearTimeout(thoughtTimeout);
+    clearTimeout(resumeTimeout);
+
+    changeThought("Friend... you grabbed me! 🪨");
+
+    resumeTimeout = setTimeout(() => {
+        reactionActive = false;
+        startThoughtCycle();
+    }, 3000);
+}
+
+rocky.addEventListener("mousedown", (event) => {
+    isDragging = true;
+    hasMoved = false;
+
+    rocky.style.cursor = "grabbing";
+
+    event.preventDefault();
+});
+
+document.addEventListener("mousemove", (event) => {
+    
+    if (!isDragging) return; 
+
+    if (event.movementX !==0 || event.movementY !== 0) {
+
+        hasMoved = true;
+
+        ipcRenderer.send(
+            "move-window", 
+            event.movementX, 
+            event.movementY
+        );
+    }
+        
+});
+
+
+document.addEventListener("mouseup", () => {
+    
+    if (!isDragging) return;
+
+    isDragging = false;
+
+    rocky.style.cursor = "grab";
+
+    if (!hasMoved) {
+        showGrabReaction();
+    }   
+});
+
+startThoughtCycle();
